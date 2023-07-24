@@ -7,6 +7,7 @@ use k8s_openapi::api::core::v1 as apicore;
 use kubewarden::{logging, protocol_version_guest, request::ValidationRequest, validate_settings};
 use kubewarden_policy_sdk::wapc_guest as guest;
 use lazy_static::lazy_static;
+use serde_json::Value;
 use slog::{info, Logger, o, warn};
 
 use settings::Settings;
@@ -27,78 +28,59 @@ pub extern "C" fn wapc_init() {
 }
 
 const DEFAULT_NAMESPACE: &str = "default";
+const NOT_A_WORKLOAD_ERROR: &str = "not a workload";
 
 fn validate(payload: &[u8]) -> CallResult {
     let validation_request: ValidationRequest<Settings> = ValidationRequest::new(payload)?;
     let kind: String = validation_request.request.kind.kind;
+    let object: Value = validation_request.request.object;
 
-    return match kind.as_ref() {
-        "Pod" => match serde_json::from_value::<apicore::Pod>(validation_request.request.object) {
-            Ok(pod) => {
-                let namespace: String = pod.metadata.namespace.unwrap_or_default();
-                validate_namespace(namespace, kind)
+    return match extract_namespace(kind.clone(), object) {
+        Ok(namespace) => {
+            if namespace.is_empty() || namespace == DEFAULT_NAMESPACE {
+                info!(LOG_DRAIN, "rejecting {} from 'default' namespace", kind);
+                let message = format!("Kind {:?} can not be deployed to the 'default' namespace", kind);
+                return kubewarden::reject_request(Some(message), None, None, None);
             }
-            Err(err) => {
-                warn!(LOG_DRAIN, "rejecting invalid Pod request: {}", err);
-                reject_invalid_request(kind)
-            }
-        },
-        "Job" => match serde_json::from_value::<batch::Job>(validation_request.request.object) {
-            Ok(job) => {
-                let namespace: String = job.metadata.namespace.unwrap_or_default();
-                validate_namespace(namespace, kind)
-            }
-            Err(err) => {
-                warn!(LOG_DRAIN, "rejecting invalid Job request: {}", err);
-                reject_invalid_request(kind)
-            }
-        },
-        "Deployment" => match serde_json::from_value::<apps::Deployment>(validation_request.request.object) {
-            Ok(deployment) => {
-                let namespace: String = deployment.metadata.namespace.unwrap_or_default();
-                validate_namespace(namespace, kind)
-            }
-            Err(err) => {
-                warn!(LOG_DRAIN, "rejecting invalid Deployment request: {}", err);
-                reject_invalid_request(kind)
-            }
-        },
-        "DaemonSet" => match serde_json::from_value::<apps::DaemonSet>(validation_request.request.object) {
-            Ok(daemon_set) => {
-                let namespace: String = daemon_set.metadata.namespace.unwrap_or_default();
-                validate_namespace(namespace, kind)
-            }
-            Err(err) => {
-                warn!(LOG_DRAIN, "rejecting invalid DaemonSet request: {}", err);
-                reject_invalid_request(kind)
-            }
-        },
-        "StatefulSet" => match serde_json::from_value::<apps::StatefulSet>(validation_request.request.object) {
-            Ok(stateful_set) => {
-                let namespace: String = stateful_set.metadata.namespace.unwrap_or_default();
-                validate_namespace(namespace, kind)
-            }
-            Err(err) => {
-                warn!(LOG_DRAIN, "rejecting invalid StatefulSet request: {}", err);
-                reject_invalid_request(kind)
-            }
-        },
-        _ => kubewarden::accept_request() // non-workload resources
-    };
-}
 
-fn validate_namespace(namespace: String, kind: String) -> CallResult {
-    if namespace == "" || namespace == DEFAULT_NAMESPACE {
-        info!(LOG_DRAIN, "rejecting {} from 'default' namespace", kind);
-        return kubewarden::reject_request(Some(format!("Kind {:?} can not be deployed to the 'default' namespace", kind)), None, None, None);
+            kubewarden::accept_request()
+        }
+        Err(err) => {
+            if err == NOT_A_WORKLOAD_ERROR {
+                return kubewarden::accept_request();
+            }
+
+            warn!(LOG_DRAIN, "rejecting invalid {} request: {}", kind, err);
+            let message = Some(format!("Invalid {} request", kind));
+            kubewarden::reject_request(message, Some(400), None, None)
+        }
     }
-
-    kubewarden::accept_request()
 }
 
-fn reject_invalid_request(kind: String) -> CallResult {
-    let message = Some(format!("Invalid {} request", kind).to_string());
-    return kubewarden::reject_request(message, Some(400), None, None);
+fn extract_namespace(kind: String, object: Value) -> Result<String, String> {
+    return match kind.as_ref() {
+        "Pod" => serde_json::from_value::<apicore::Pod>(object).
+            map(|pod| pod.metadata.namespace.unwrap_or_default()).
+            map_err(|error| error.to_string()),
+
+        "Job" => serde_json::from_value::<batch::Job>(object).
+            map(|job| job.metadata.namespace.unwrap_or_default()).
+            map_err(|error| error.to_string()),
+
+        "Deployment" => serde_json::from_value::<apps::Deployment>(object).
+            map(|deployment| deployment.metadata.namespace.unwrap_or_default()).
+            map_err(|error| error.to_string()),
+
+        "DaemonSet" => serde_json::from_value::<apps::DaemonSet>(object).
+            map(|daemon_set| daemon_set.metadata.namespace.unwrap_or_default()).
+            map_err(|error| error.to_string()),
+
+        "StatefulSet" => serde_json::from_value::<apps::StatefulSet>(object).
+            map(|stateful_set| stateful_set.metadata.namespace.unwrap_or_default()).
+            map_err(|error| error.to_string()),
+
+        _ => Err(NOT_A_WORKLOAD_ERROR.to_string())
+    };
 }
 
 #[cfg(test)]
