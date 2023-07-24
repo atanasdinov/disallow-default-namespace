@@ -6,7 +6,8 @@
   },
   "object": {
     "metadata": {
-      "name": "nginx"
+      "name": "pod-name",
+      "namespace": "default"
     },
     "spec": {
       "containers": [

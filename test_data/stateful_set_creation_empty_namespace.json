@@ -1,0 +1,24 @@
+{
+  "uid": "1299d386-525b-4032-98ae-1949f69f9cfc",
+  "kind": {
+    "kind": "StatefulSet",
+    "version": "apps/v1"
+  },
+  "object": {
+    "metadata": {
+      "name": "ss-name"
+    },
+    "spec": {
+      "template": {
+        "spec": {
+          "containers": [
+            {
+              "image": "nginx",
+              "name": "nginx"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

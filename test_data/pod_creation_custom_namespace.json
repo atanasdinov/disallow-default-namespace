@@ -6,7 +6,8 @@
   },
   "object": {
     "metadata": {
-      "name": "invalid-pod-name"
+      "name": "pod-name",
+      "namespace": "custom"
     },
     "spec": {
       "containers": [

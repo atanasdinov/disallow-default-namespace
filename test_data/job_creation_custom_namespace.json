@@ -1,0 +1,25 @@
+{
+  "uid": "1299d386-525b-4032-98ae-1949f69f9cfc",
+  "kind": {
+    "kind": "Job",
+    "version": "batch/v1"
+  },
+  "object": {
+    "metadata": {
+      "name": "job-name",
+      "namespace": "custom"
+    },
+    "spec": {
+      "template": {
+        "spec": {
+          "containers": [
+            {
+              "image": "nginx",
+              "name": "nginx"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
