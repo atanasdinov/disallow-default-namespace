@@ -8,14 +8,14 @@ use kubewarden::{logging, protocol_version_guest, request::ValidationRequest, va
 use kubewarden_policy_sdk::wapc_guest as guest;
 use lazy_static::lazy_static;
 use serde_json::Value;
-use slog::{info, Logger, o, warn};
+use slog::{info, o, warn, Logger};
 
 use settings::Settings;
 
 use crate::error::ResourceError;
 
-mod settings;
 mod error;
+mod settings;
 
 lazy_static! {
     static ref LOG_DRAIN: Logger = Logger::root(
@@ -42,7 +42,10 @@ fn validate(payload: &[u8]) -> CallResult {
         Ok(namespace) => {
             if namespace.is_empty() || namespace == DEFAULT_NAMESPACE {
                 info!(LOG_DRAIN, "rejecting {} from 'default' namespace", kind);
-                let message = format!("Kind {:?} can not be deployed to the 'default' namespace", kind);
+                let message = format!(
+                    "Kind {:?} can not be deployed to the 'default' namespace",
+                    kind
+                );
                 return kubewarden::reject_request(Some(message), None, None, None);
             }
 
@@ -88,7 +91,7 @@ fn extract_namespace(kind: String, object: Value) -> Result<String, ResourceErro
             Ok(stateful_set.metadata.namespace.unwrap_or_default())
         }
 
-        _ => Err(ResourceError::NonWorkloadError)
+        _ => Err(ResourceError::NonWorkloadError),
     };
 }
 
@@ -109,7 +112,11 @@ mod tests {
         };
 
         let res = tc.eval(validate).unwrap();
-        assert!(res.mutated_object.is_none(), "Something mutated with test case: {}", tc.name);
+        assert!(
+            res.mutated_object.is_none(),
+            "Something mutated with test case: {}",
+            tc.name
+        );
     }
 
     #[test]
@@ -123,7 +130,11 @@ mod tests {
         };
 
         let res = tc.eval(validate).unwrap();
-        assert!(res.mutated_object.is_none(), "Something mutated with test case: {}", tc.name);
+        assert!(
+            res.mutated_object.is_none(),
+            "Something mutated with test case: {}",
+            tc.name
+        );
     }
 
     #[test]
@@ -137,7 +148,11 @@ mod tests {
         };
 
         let res = tc.eval(validate).unwrap();
-        assert!(res.mutated_object.is_none(), "Something mutated with test case: {}", tc.name);
+        assert!(
+            res.mutated_object.is_none(),
+            "Something mutated with test case: {}",
+            tc.name
+        );
     }
 
     #[test]
@@ -151,7 +166,11 @@ mod tests {
         };
 
         let res = tc.eval(validate).unwrap();
-        assert!(res.mutated_object.is_none(), "Something mutated with test case: {}", tc.name);
+        assert!(
+            res.mutated_object.is_none(),
+            "Something mutated with test case: {}",
+            tc.name
+        );
     }
 
     #[test]
@@ -165,7 +184,11 @@ mod tests {
         };
 
         let res = tc.eval(validate).unwrap();
-        assert!(res.mutated_object.is_none(), "Something mutated with test case: {}", tc.name);
+        assert!(
+            res.mutated_object.is_none(),
+            "Something mutated with test case: {}",
+            tc.name
+        );
     }
 
     #[test]
@@ -179,7 +202,11 @@ mod tests {
         };
 
         let res = tc.eval(validate).unwrap();
-        assert!(res.mutated_object.is_none(), "Something mutated with test case: {}", tc.name);
+        assert!(
+            res.mutated_object.is_none(),
+            "Something mutated with test case: {}",
+            tc.name
+        );
     }
 
     #[test]
@@ -193,7 +220,11 @@ mod tests {
         };
 
         let res = tc.eval(validate).unwrap();
-        assert!(res.mutated_object.is_none(), "Something mutated with test case: {}", tc.name);
+        assert!(
+            res.mutated_object.is_none(),
+            "Something mutated with test case: {}",
+            tc.name
+        );
     }
 
     #[test]
@@ -207,7 +238,11 @@ mod tests {
         };
 
         let res = tc.eval(validate).unwrap();
-        assert!(res.mutated_object.is_none(), "Something mutated with test case: {}", tc.name);
+        assert!(
+            res.mutated_object.is_none(),
+            "Something mutated with test case: {}",
+            tc.name
+        );
     }
 
     #[test]
@@ -221,7 +256,11 @@ mod tests {
         };
 
         let res = tc.eval(validate).unwrap();
-        assert!(res.mutated_object.is_none(), "Something mutated with test case: {}", tc.name);
+        assert!(
+            res.mutated_object.is_none(),
+            "Something mutated with test case: {}",
+            tc.name
+        );
     }
 
     #[test]
@@ -235,7 +274,11 @@ mod tests {
         };
 
         let res = tc.eval(validate).unwrap();
-        assert!(res.mutated_object.is_none(), "Something mutated with test case: {}", tc.name);
+        assert!(
+            res.mutated_object.is_none(),
+            "Something mutated with test case: {}",
+            tc.name
+        );
     }
 
     #[test]
@@ -249,7 +292,11 @@ mod tests {
         };
 
         let res = tc.eval(validate).unwrap();
-        assert!(res.mutated_object.is_none(), "Something mutated with test case: {}", tc.name);
+        assert!(
+            res.mutated_object.is_none(),
+            "Something mutated with test case: {}",
+            tc.name
+        );
     }
 
     #[test]
@@ -263,7 +310,11 @@ mod tests {
         };
 
         let res = tc.eval(validate).unwrap();
-        assert!(res.mutated_object.is_none(), "Something mutated with test case: {}", tc.name);
+        assert!(
+            res.mutated_object.is_none(),
+            "Something mutated with test case: {}",
+            tc.name
+        );
     }
 
     #[test]
@@ -277,7 +328,11 @@ mod tests {
         };
 
         let res = tc.eval(validate).unwrap();
-        assert!(res.mutated_object.is_none(), "Something mutated with test case: {}", tc.name);
+        assert!(
+            res.mutated_object.is_none(),
+            "Something mutated with test case: {}",
+            tc.name
+        );
     }
 
     #[test]
@@ -291,7 +346,11 @@ mod tests {
         };
 
         let res = tc.eval(validate).unwrap();
-        assert!(res.mutated_object.is_none(), "Something mutated with test case: {}", tc.name);
+        assert!(
+            res.mutated_object.is_none(),
+            "Something mutated with test case: {}",
+            tc.name
+        );
     }
 
     #[test]
@@ -305,7 +364,11 @@ mod tests {
         };
 
         let res = tc.eval(validate).unwrap();
-        assert!(res.mutated_object.is_none(), "Something mutated with test case: {}", tc.name);
+        assert!(
+            res.mutated_object.is_none(),
+            "Something mutated with test case: {}",
+            tc.name
+        );
     }
 
     #[test]
@@ -319,6 +382,10 @@ mod tests {
         };
 
         let res = tc.eval(validate).unwrap();
-        assert!(res.mutated_object.is_none(), "Something mutated with test case: {}", tc.name);
+        assert!(
+            res.mutated_object.is_none(),
+            "Something mutated with test case: {}",
+            tc.name
+        );
     }
 }

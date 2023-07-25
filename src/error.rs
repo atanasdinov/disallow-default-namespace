@@ -1,5 +1,5 @@
-use std::{error, fmt};
 use std::fmt::Formatter;
+use std::{error, fmt};
 
 #[derive(Debug)]
 pub enum ResourceError {
