@@ -1,10 +1,18 @@
 rules:
-- apiGroups: [""]
-  apiVersions: ["v1"]
-  resources: ["pods"]
-  operations: ["CREATE"]
+  - apiGroups: [ "" ]
+    apiVersions: [ "v1" ]
+    resources: [ "pods" ]
+    operations: [ "CREATE" ]
+  - apiGroups: [ "apps" ]
+    apiVersions: [ "v1" ]
+    resources: [ "deployments", "daemonsets", "statefulsets" ]
+    operations: [ "CREATE" ]
+  - apiGroups: [ "batch" ]
+    apiVersions: [ "v1" ]
+    resources: [ "jobs" ]
+    operations: [ "CREATE" ]
 mutating: false
-contextAwareResources: []
+contextAwareResources: [ ]
 executionMode: kubewarden-wapc
 # Consider the policy for the background audit scans. Default is true. Note the
 # intrinsic limitations of the background audit feature on docs.kubewarden.io;
@@ -13,13 +21,13 @@ executionMode: kubewarden-wapc
 backgroundAudit: true
 annotations:
   # artifacthub specific:
-  io.artifacthub.displayName: Policy Name
-  io.artifacthub.resources: Pod
-  io.artifacthub.keywords: pod, cool policy, kubewarden
+  io.artifacthub.displayName: Disallow Default Namespace
+  io.artifacthub.resources: Pod, Job, Deployment, DaemonSet, StatefulSet
+  io.artifacthub.keywords: pod, job, deployment, daemonset, statefulset, kubewarden
   io.kubewarden.policy.ociUrl: ghcr.io/atanasdinov/policies/disallow-default-namespace
   # kubewarden specific:
   io.kubewarden.policy.title: disallow-default-namespace
-  io.kubewarden.policy.description: Short description
+  io.kubewarden.policy.description: Prevents workload resources from being deployed to the default namespace
   io.kubewarden.policy.author: Atanas Dinov <atanas.dinov@suse.com>
   io.kubewarden.policy.url: https://github.com/yourorg/disallow-default-namespace
   io.kubewarden.policy.source: https://github.com/yourorg/disallow-default-namespace
