@@ -1,7 +1,5 @@
 use serde::{Deserialize, Serialize};
 
-// Describe the settings your policy expects when
-// loaded by the policy server.
 #[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(default)]
 pub(crate) struct Settings {}
@@ -19,10 +17,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn accept_settings() -> Result<(), ()> {
+    fn accept_settings() {
         let settings = Settings {};
 
         assert!(settings.validate().is_ok());
-        Ok(())
     }
 }
