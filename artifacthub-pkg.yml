@@ -1,30 +1,70 @@
----
-###
-### Use `make artifacthub-pkg.yml` to auto-generate this file
-### See docs.kubewarden.io for publishing to ArtifactHub
-###
+# Kubewarden Artifacthub Package config
+#
+# Use this config to submit the policy to https://artifacthub.io.
+#
+# This config can be saved to its default location with:
+#   kwctl scaffold artifacthub > artifacthub-pkg.yml 
 version: 0.1.0
 name: disallow-default-namespace
-displayName: LIKE NAME, BUT FANCIER
-createdAt: '2022-07-19T16:39:10+02:00'
-description: DESCRIPTION OF YOUR POLICY
+displayName: Disallow Default Namespace
+createdAt: 2023-07-25T15:03:39.393907Z
+description: Prevents workload resources from being deployed to the default namespace
 license: Apache-2.0
-homeURL: https://author1.website
+homeURL: https://github.com/atanasdinov/disallow-default-namespace
 containersImages:
 - name: policy
-  image: "ghcr.io/atanasdinov/policies/disallow-default-namespace:v0.1.0"
+  image: ghcr.io/atanasdinov/policies/disallow-default-namespace:v0.1.0
 keywords:
-- this is freeform
+- pod
+- job
+- deployment
+- daemonset
+- statefulset
+- kubewarden
 links:
 - name: policy
-  url: https://github.com/yourorg/disallow-default-namespace/releases/download/v0.1.0/policy.wasm
+  url: https://github.com/atanasdinov/disallow-default-namespace/releases/download/v0.1.0/policy.wasm
 - name: source
-  url: POLICY HOMEPAGE URL
+  url: https://github.com/atanasdinov/disallow-default-namespace
+install: |
+  The policy can be obtained using [`kwctl`](https://github.com/kubewarden/kwctl):
+  ```console
+  kwctl pull ghcr.io/atanasdinov/policies/disallow-default-namespace:v0.1.0
+  ```
+maintainers:
+- name: Atanas Dinov
+  email: atanas.dinov@suse.com
 provider:
   name: kubewarden
 recommendations:
 - url: https://artifacthub.io/packages/helm/kubewarden/kubewarden-controller
 annotations:
-  kubewarden/resources: Pod # comma separated list
-  kubewarden/mutation: false
-  kubewarden/contextAware: false
+  kubewarden/mutation: 'false'
+  kubewarden/resources: Pod, Job, Deployment, DaemonSet, StatefulSet
+  kubewarden/rules: |
+    - apiGroups:
+      - ''
+      apiVersions:
+      - v1
+      resources:
+      - pods
+      operations:
+      - CREATE
+    - apiGroups:
+      - apps
+      apiVersions:
+      - v1
+      resources:
+      - deployments
+      - daemonsets
+      - statefulsets
+      operations:
+      - CREATE
+    - apiGroups:
+      - batch
+      apiVersions:
+      - v1
+      resources:
+      - jobs
+      operations:
+      - CREATE
