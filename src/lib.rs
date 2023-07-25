@@ -1,20 +1,18 @@
 extern crate kubewarden_policy_sdk as kubewarden;
 
 use guest::prelude::*;
-use k8s_openapi::api::apps::v1 as apps;
-use k8s_openapi::api::batch::v1 as batch;
-use k8s_openapi::api::core::v1 as apicore;
+use k8s_openapi::api::apps::v1::{DaemonSet, Deployment, StatefulSet};
+use k8s_openapi::api::batch::v1::Job;
+use k8s_openapi::api::core::v1::Pod;
 use kubewarden::{logging, protocol_version_guest, request::ValidationRequest, validate_settings};
 use kubewarden_policy_sdk::wapc_guest as guest;
 use lazy_static::lazy_static;
+use serde::de::DeserializeOwned;
 use serde_json::Value;
 use slog::{info, o, warn, Logger};
 
 use settings::Settings;
 
-use crate::error::ResourceError;
-
-mod error;
 mod settings;
 
 lazy_static! {
@@ -33,13 +31,60 @@ pub extern "C" fn wapc_init() {
 
 const DEFAULT_NAMESPACE: &str = "default";
 
+trait Resource {
+    fn namespace(&self) -> String;
+}
+
+impl Resource for Pod {
+    fn namespace(&self) -> String {
+        self.metadata.namespace.clone().unwrap_or_default()
+    }
+}
+
+impl Resource for Job {
+    fn namespace(&self) -> String {
+        self.metadata.namespace.clone().unwrap_or_default()
+    }
+}
+
+impl Resource for Deployment {
+    fn namespace(&self) -> String {
+        self.metadata.namespace.clone().unwrap_or_default()
+    }
+}
+
+impl Resource for DaemonSet {
+    fn namespace(&self) -> String {
+        self.metadata.namespace.clone().unwrap_or_default()
+    }
+}
+
+impl Resource for StatefulSet {
+    fn namespace(&self) -> String {
+        self.metadata.namespace.clone().unwrap_or_default()
+    }
+}
+
 fn validate(payload: &[u8]) -> CallResult {
     let validation_request: ValidationRequest<Settings> = ValidationRequest::new(payload)?;
     let kind: String = validation_request.request.kind.kind;
     let object: Value = validation_request.request.object;
 
-    return match extract_namespace(kind.clone(), object) {
-        Ok(namespace) => {
+    return match kind.as_ref() {
+        "Pod" => validate_resource::<Pod>(kind, object),
+        "Job" => validate_resource::<Job>(kind, object),
+        "Deployment" => validate_resource::<Deployment>(kind, object),
+        "DaemonSet" => validate_resource::<DaemonSet>(kind, object),
+        "StatefulSet" => validate_resource::<StatefulSet>(kind, object),
+        _ => kubewarden::accept_request(), // non-workload resource
+    };
+}
+
+fn validate_resource<T: Resource + DeserializeOwned>(kind: String, object: Value) -> CallResult {
+    match serde_json::from_value::<T>(object) {
+        Ok(resource) => {
+            let namespace: String = resource.namespace();
+
             if namespace.is_empty() || namespace == DEFAULT_NAMESPACE {
                 info!(LOG_DRAIN, "rejecting {} from 'default' namespace", kind);
                 let message = format!(
@@ -51,48 +96,12 @@ fn validate(payload: &[u8]) -> CallResult {
 
             kubewarden::accept_request()
         }
-        Err(error) => {
-            return match error {
-                ResourceError::NonWorkloadError => kubewarden::accept_request(),
-                ResourceError::SerdeJsonError(err) => {
-                    warn!(LOG_DRAIN, "rejecting invalid {} request: {}", kind, err);
-                    let message = Some(format!("Invalid {} request", kind));
-                    kubewarden::reject_request(message, Some(400), None, None)
-                }
-            };
+        Err(err) => {
+            warn!(LOG_DRAIN, "rejecting invalid {} request: {}", kind, err);
+            let message = Some(format!("Invalid {} request", kind));
+            kubewarden::reject_request(message, Some(400), None, None)
         }
-    };
-}
-
-fn extract_namespace(kind: String, object: Value) -> Result<String, ResourceError> {
-    return match kind.as_ref() {
-        "Pod" => {
-            let pod = serde_json::from_value::<apicore::Pod>(object)?;
-            Ok(pod.metadata.namespace.unwrap_or_default())
-        }
-
-        "Job" => {
-            let job = serde_json::from_value::<batch::Job>(object)?;
-            Ok(job.metadata.namespace.unwrap_or_default())
-        }
-
-        "Deployment" => {
-            let deployment = serde_json::from_value::<apps::Deployment>(object)?;
-            Ok(deployment.metadata.namespace.unwrap_or_default())
-        }
-
-        "DaemonSet" => {
-            let daemon_set = serde_json::from_value::<apps::DaemonSet>(object)?;
-            Ok(daemon_set.metadata.namespace.unwrap_or_default())
-        }
-
-        "StatefulSet" => {
-            let stateful_set = serde_json::from_value::<apps::StatefulSet>(object)?;
-            Ok(stateful_set.metadata.namespace.unwrap_or_default())
-        }
-
-        _ => Err(ResourceError::NonWorkloadError),
-    };
+    }
 }
 
 #[cfg(test)]
