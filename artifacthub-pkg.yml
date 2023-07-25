@@ -4,16 +4,16 @@
 #
 # This config can be saved to its default location with:
 #   kwctl scaffold artifacthub > artifacthub-pkg.yml 
-version: 0.1.0
+version: 0.1.1
 name: disallow-default-namespace
 displayName: Disallow Default Namespace
-createdAt: 2023-07-25T15:03:39.393907Z
+createdAt: 2023-07-25T17:04:31.819105Z
 description: Prevents workload resources from being deployed to the default namespace
 license: Apache-2.0
 homeURL: https://github.com/atanasdinov/disallow-default-namespace
 containersImages:
 - name: policy
-  image: ghcr.io/atanasdinov/policies/disallow-default-namespace:v0.1.0
+  image: ghcr.io/atanasdinov/policies/disallow-default-namespace:v0.1.1
 keywords:
 - pod
 - job
@@ -23,13 +23,13 @@ keywords:
 - kubewarden
 links:
 - name: policy
-  url: https://github.com/atanasdinov/disallow-default-namespace/releases/download/v0.1.0/policy.wasm
+  url: https://github.com/atanasdinov/disallow-default-namespace/releases/download/v0.1.1/policy.wasm
 - name: source
   url: https://github.com/atanasdinov/disallow-default-namespace
 install: |
   The policy can be obtained using [`kwctl`](https://github.com/kubewarden/kwctl):
   ```console
-  kwctl pull ghcr.io/atanasdinov/policies/disallow-default-namespace:v0.1.0
+  kwctl pull ghcr.io/atanasdinov/policies/disallow-default-namespace:v0.1.1
   ```
 maintainers:
 - name: Atanas Dinov
