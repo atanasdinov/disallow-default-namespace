@@ -54,7 +54,7 @@ fn validate(payload: &[u8]) -> CallResult {
             let message = Some(format!("Invalid {} request", kind));
             kubewarden::reject_request(message, Some(400), None, None)
         }
-    }
+    };
 }
 
 fn extract_namespace(kind: String, object: Value) -> Result<String, String> {
@@ -90,7 +90,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn accept_pod_with_custom_namespace() -> Result<(), ()> {
+    fn accept_pod_with_custom_namespace() {
         let request_file = "test_data/pod_creation_custom_namespace.json";
         let tc = Testcase {
             name: String::from("Pod creation with valid namespace"),
@@ -101,12 +101,10 @@ mod tests {
 
         let res = tc.eval(validate).unwrap();
         assert!(res.mutated_object.is_none(), "Something mutated with test case: {}", tc.name);
-
-        Ok(())
     }
 
     #[test]
-    fn reject_pod_with_invalid_namespace() -> Result<(), ()> {
+    fn reject_pod_with_invalid_namespace() {
         let request_file = "test_data/pod_creation_default_namespace.json";
         let tc = Testcase {
             name: String::from("Pod creation with default namespace"),
@@ -117,12 +115,10 @@ mod tests {
 
         let res = tc.eval(validate).unwrap();
         assert!(res.mutated_object.is_none(), "Something mutated with test case: {}", tc.name);
-
-        Ok(())
     }
 
     #[test]
-    fn reject_pod_with_empty_namespace() -> Result<(), ()> {
+    fn reject_pod_with_empty_namespace() {
         let request_file = "test_data/pod_creation_empty_namespace.json";
         let tc = Testcase {
             name: String::from("Pod creation with empty namespace"),
@@ -133,12 +129,10 @@ mod tests {
 
         let res = tc.eval(validate).unwrap();
         assert!(res.mutated_object.is_none(), "Something mutated with test case: {}", tc.name);
-
-        Ok(())
     }
 
     #[test]
-    fn accept_job_with_custom_namespace() -> Result<(), ()> {
+    fn accept_job_with_custom_namespace() {
         let request_file = "test_data/job_creation_custom_namespace.json";
         let tc = Testcase {
             name: String::from("Job creation with valid namespace"),
@@ -149,12 +143,10 @@ mod tests {
 
         let res = tc.eval(validate).unwrap();
         assert!(res.mutated_object.is_none(), "Something mutated with test case: {}", tc.name);
-
-        Ok(())
     }
 
     #[test]
-    fn reject_job_with_invalid_namespace() -> Result<(), ()> {
+    fn reject_job_with_invalid_namespace() {
         let request_file = "test_data/job_creation_default_namespace.json";
         let tc = Testcase {
             name: String::from("Job creation with default namespace"),
@@ -165,12 +157,10 @@ mod tests {
 
         let res = tc.eval(validate).unwrap();
         assert!(res.mutated_object.is_none(), "Something mutated with test case: {}", tc.name);
-
-        Ok(())
     }
 
     #[test]
-    fn reject_job_with_empty_namespace() -> Result<(), ()> {
+    fn reject_job_with_empty_namespace() {
         let request_file = "test_data/job_creation_empty_namespace.json";
         let tc = Testcase {
             name: String::from("Job creation with empty namespace"),
@@ -181,12 +171,10 @@ mod tests {
 
         let res = tc.eval(validate).unwrap();
         assert!(res.mutated_object.is_none(), "Something mutated with test case: {}", tc.name);
-
-        Ok(())
     }
 
     #[test]
-    fn accept_daemon_set_with_custom_namespace() -> Result<(), ()> {
+    fn accept_daemon_set_with_custom_namespace() {
         let request_file = "test_data/daemon_set_creation_custom_namespace.json";
         let tc = Testcase {
             name: String::from("Daemon set creation with valid namespace"),
@@ -197,12 +185,10 @@ mod tests {
 
         let res = tc.eval(validate).unwrap();
         assert!(res.mutated_object.is_none(), "Something mutated with test case: {}", tc.name);
-
-        Ok(())
     }
 
     #[test]
-    fn reject_daemon_set_with_invalid_namespace() -> Result<(), ()> {
+    fn reject_daemon_set_with_invalid_namespace() {
         let request_file = "test_data/daemon_set_creation_default_namespace.json";
         let tc = Testcase {
             name: String::from("Daemon set creation with default namespace"),
@@ -213,12 +199,10 @@ mod tests {
 
         let res = tc.eval(validate).unwrap();
         assert!(res.mutated_object.is_none(), "Something mutated with test case: {}", tc.name);
-
-        Ok(())
     }
 
     #[test]
-    fn reject_daemon_set_with_empty_namespace() -> Result<(), ()> {
+    fn reject_daemon_set_with_empty_namespace() {
         let request_file = "test_data/daemon_set_creation_empty_namespace.json";
         let tc = Testcase {
             name: String::from("Daemon set creation with empty namespace"),
@@ -229,12 +213,10 @@ mod tests {
 
         let res = tc.eval(validate).unwrap();
         assert!(res.mutated_object.is_none(), "Something mutated with test case: {}", tc.name);
-
-        Ok(())
     }
 
     #[test]
-    fn accept_stateful_set_with_custom_namespace() -> Result<(), ()> {
+    fn accept_stateful_set_with_custom_namespace() {
         let request_file = "test_data/stateful_set_creation_custom_namespace.json";
         let tc = Testcase {
             name: String::from("Stateful set creation with valid namespace"),
@@ -245,12 +227,10 @@ mod tests {
 
         let res = tc.eval(validate).unwrap();
         assert!(res.mutated_object.is_none(), "Something mutated with test case: {}", tc.name);
-
-        Ok(())
     }
 
     #[test]
-    fn reject_stateful_set_with_invalid_namespace() -> Result<(), ()> {
+    fn reject_stateful_set_with_invalid_namespace() {
         let request_file = "test_data/stateful_set_creation_default_namespace.json";
         let tc = Testcase {
             name: String::from("Stateful set creation with default namespace"),
@@ -261,12 +241,10 @@ mod tests {
 
         let res = tc.eval(validate).unwrap();
         assert!(res.mutated_object.is_none(), "Something mutated with test case: {}", tc.name);
-
-        Ok(())
     }
 
     #[test]
-    fn reject_stateful_set_with_empty_namespace() -> Result<(), ()> {
+    fn reject_stateful_set_with_empty_namespace() {
         let request_file = "test_data/stateful_set_creation_empty_namespace.json";
         let tc = Testcase {
             name: String::from("Stateful set creation with empty namespace"),
@@ -277,12 +255,10 @@ mod tests {
 
         let res = tc.eval(validate).unwrap();
         assert!(res.mutated_object.is_none(), "Something mutated with test case: {}", tc.name);
-
-        Ok(())
     }
 
     #[test]
-    fn accept_deployment_with_custom_namespace() -> Result<(), ()> {
+    fn accept_deployment_with_custom_namespace() {
         let request_file = "test_data/deployment_creation_custom_namespace.json";
         let tc = Testcase {
             name: String::from("Deployment creation with valid namespace"),
@@ -293,12 +269,10 @@ mod tests {
 
         let res = tc.eval(validate).unwrap();
         assert!(res.mutated_object.is_none(), "Something mutated with test case: {}", tc.name);
-
-        Ok(())
     }
 
     #[test]
-    fn reject_deployment_with_invalid_namespace() -> Result<(), ()> {
+    fn reject_deployment_with_invalid_namespace() {
         let request_file = "test_data/deployment_creation_default_namespace.json";
         let tc = Testcase {
             name: String::from("Deployment creation with default namespace"),
@@ -309,12 +283,10 @@ mod tests {
 
         let res = tc.eval(validate).unwrap();
         assert!(res.mutated_object.is_none(), "Something mutated with test case: {}", tc.name);
-
-        Ok(())
     }
 
     #[test]
-    fn reject_deployment_with_empty_namespace() -> Result<(), ()> {
+    fn reject_deployment_with_empty_namespace() {
         let request_file = "test_data/deployment_creation_empty_namespace.json";
         let tc = Testcase {
             name: String::from("Deployment creation with empty namespace"),
@@ -325,12 +297,10 @@ mod tests {
 
         let res = tc.eval(validate).unwrap();
         assert!(res.mutated_object.is_none(), "Something mutated with test case: {}", tc.name);
-
-        Ok(())
     }
 
     #[test]
-    fn accept_request_with_non_pod_resource() -> Result<(), ()> {
+    fn accept_request_with_non_pod_resource() {
         let request_file = "test_data/ingress_creation.json";
         let tc = Testcase {
             name: String::from("Ingress creation"),
@@ -341,7 +311,5 @@ mod tests {
 
         let res = tc.eval(validate).unwrap();
         assert!(res.mutated_object.is_none(), "Something mutated with test case: {}", tc.name);
-
-        Ok(())
     }
 }
